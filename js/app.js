@@ -1,8 +1,4 @@
-
-
 'using strict';
-
-
 
 // As a user, I would like to display three unique products by chance so that the viewers can pick a favorite.
 
@@ -29,22 +25,43 @@ Product.pushToList = (name, filePath) => {
 };
 
 
-var getImages = () =>{
-  
+var imgGenerator = {
+  getPaths: function(){
+    var indices = imgGenerator.getUniqueIndices();
+    var paths = [
+      products[indices[0]],
+      products[indices[1]],
+      products[indices[2]],
+    ];
+    return paths;
+  },
+
+  getImages: function(){
+    var indices = imgGenerator.getUniqueIndices();
+    var pathA = indices[0];
+    var pathB = indices[1];
+    var pathC = indices[2];
+    return [pathA, pathB, pathC];
+  },
+  getUniqueIndices: function(){
+    var indexA;
+    var indexB;
+    var indexC;
+    indexA = imgGenerator.getRandomIndex();
+    indexB = imgGenerator.getRandomIndex([indexA]);
+    indexC = imgGenerator.getRandomIndex([indexA, indexB]);
+    return [indexA, indexB, indexC];
+  },
+  getRandomIndex: function(claimedIndices){
+    var randomNumber = Math.floor(Math.random() * products.length);
+    claimedIndices.forEach((element)=>{
+      if(randomNumber === element) imgGenerator.getRandomIndex(claimedIndices);
+    });
+    return randomNumber;
+  }
 };
 
-var getRandomFilePath = () =>{
-  
-  var randomNumber = Math.floor(Math.random() * 21);
-  return randomNumber;
-}
 
-console.log(getRandomFilePath());
-console.log(getRandomFilePath());
-console.log(getRandomFilePath());
-console.log(getRandomFilePath());
-console.log(getRandomFilePath());
-console.log(getRandomFilePath());
 
 
 
