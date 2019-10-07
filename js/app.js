@@ -12,54 +12,124 @@
 //
 // Once the users ‘clicks’ a product, generate three new products for the user to pick from.
 
+
+const fileNames = [
+  'bag.jpg',
+  'banana.jpg',
+  'bathroom.jpg',
+  'boots.jpg',
+  'breakfast.jpg',
+  'bubblegum.jpg',
+  'chair.jpg',
+  'cthulhu.jpg',
+  'dog-duck.jpg',
+  'dragon.jpg',
+  'pen.jpg',
+  'pet-sweep.jpg',
+  'scissors.jpg',
+  'shark.jpg',
+  'sweep.png',
+  'tauntaun.jpg',
+  'unicorn.jpg',
+  'usb.gif',
+  'water-can.jpg',
+  'wine-glass.jpg',
+];
+
+
 var products = [];
+
+
+var createProducts = () => {
+  fileNames.forEach((file) =>{
+    var name = file.slice(0, file.length - 4);
+    var path = '/img/' + file;
+    new Product(name, path);
+  });
+};
+
+$(document).ready(() => {
+  startVoting();
+
+});
+
+var startVoting = () => {
+  createProducts();
+  console.log(products);
+  renderHTML.createImgList();
+};
+
 
 var Product = function(name, filePath){
   this.name = name;
   this.filePath = filePath;
-  Product.pushToList(name, filePath);
+  Product.pushToList(this);
 };
 
-Product.pushToList = (name, filePath) => {
-  products.push(filePath);
+Product.pushToList = (product) => {
+  products.push(product);
 };
 
 
 var imgGenerator = {
   getPaths: function(){
     var indices = imgGenerator.getUniqueIndices();
-    var paths = [
-      products[indices[0]],
-      products[indices[1]],
-      products[indices[2]],
-    ];
+    var paths = [];
+    
+
+    indices.forEach((index) => {
+      paths.push(products[index].filePath);
+    });
     return paths;
   },
 
-  getImages: function(){
-    var indices = imgGenerator.getUniqueIndices();
-    var pathA = indices[0];
-    var pathB = indices[1];
-    var pathC = indices[2];
-    return [pathA, pathB, pathC];
-  },
+
   getUniqueIndices: function(){
     var indexA;
     var indexB;
     var indexC;
-    indexA = imgGenerator.getRandomIndex();
+    indexA = imgGenerator.getRandomIndex(null);
     indexB = imgGenerator.getRandomIndex([indexA]);
-    indexC = imgGenerator.getRandomIndex([indexA, indexB]);
+    indexC = imgGenerator.getRandomIndex([indexA, indexB]);    
+    console.log([indexA, indexB, indexC]);
     return [indexA, indexB, indexC];
   },
-  getRandomIndex: function(claimedIndices){
+
+  getRandomIndex: function(claimedIndices){    
+    console.log(claimedIndices);
     var randomNumber = Math.floor(Math.random() * products.length);
-    claimedIndices.forEach((element)=>{
-      if(randomNumber === element) imgGenerator.getRandomIndex(claimedIndices);
+    if(claimedIndices === null){
+      return randomNumber;
+    }
+    claimedIndices.forEach((index) => {
+      if(randomNumber === parseInt(index)){
+        console.log('going back');
+        imgGenerator.getRandomIndex(claimedIndices);
+      }
     });
     return randomNumber;
+  },
+};
+    
+   
+
+
+
+
+  
+
+
+
+
+
+var renderHTML = {
+  createImgList: function(){
+    var paths = imgGenerator.getPaths();
+    var liHtml = '<li><img src="' + paths[0] + '"></img></li><li><img src="' + paths[1] + '"></img></li><li><img src="' + paths[2] + '"></img></li>';
+    $('#images').append(liHtml);
   }
 };
+
 
 
 
@@ -99,4 +169,3 @@ var imgGenerator = {
 //  After voting rounds have been completed, remove the event listeners on the product.
 //
 //  Display the list of all the products followed by the votes received and number of times seen for each. Example: Banana Slicer had 3 votes
-
