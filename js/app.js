@@ -55,8 +55,8 @@ $(document).ready(() => {
 
 var startVoting = () => {
   createProducts();
-  console.log(products);
   renderHTML.createImgList();
+
 };
 
 
@@ -72,51 +72,42 @@ Product.pushToList = (product) => {
 
 
 var imgGenerator = {
+
   getPaths: function(){
     var indices = imgGenerator.getUniqueIndices();
+    console.log(indices);
     var paths = [];
-    
-
     indices.forEach((index) => {
-      paths.push(products[index].filePath);
+      paths.push(products[index]);
     });
     return paths;
   },
 
 
   getUniqueIndices: function(){
-    var indexA;
-    var indexB;
-    var indexC;
-    indexA = imgGenerator.getRandomIndex(null);
-    indexB = imgGenerator.getRandomIndex([indexA]);
-    indexC = imgGenerator.getRandomIndex([indexA, indexB]);    
-    console.log([indexA, indexB, indexC]);
-    return [indexA, indexB, indexC];
+    var a = this.getRandomIndex();
+    var b = this.getRandomIndex();
+    var c = this.getRandomIndex();
+    while(a === b){
+      b = this.getRandomIndex();
+    }
+    while(a === c || b === c){
+      c = this.getRandomIndex();
+    }
+    return [a,b,c];
   },
 
-  getRandomIndex: function(claimedIndices){    
-    console.log(claimedIndices);
-    var randomNumber = Math.floor(Math.random() * products.length);
-    if(claimedIndices === null){
-      return randomNumber;
-    }
-    claimedIndices.forEach((index) => {
-      if(randomNumber === parseInt(index)){
-        console.log('going back');
-        imgGenerator.getRandomIndex(claimedIndices);
-      }
-    });
-    return randomNumber;
+  getRandomIndex: function(){
+    return Math.floor(Math.random() * products.length);
   },
 };
-    
-   
 
 
 
 
-  
+
+
+
 
 
 
@@ -125,8 +116,13 @@ var imgGenerator = {
 var renderHTML = {
   createImgList: function(){
     var paths = imgGenerator.getPaths();
-    var liHtml = '<li><img src="' + paths[0] + '"></img></li><li><img src="' + paths[1] + '"></img></li><li><img src="' + paths[2] + '"></img></li>';
-    $('#images').append(liHtml);
+    var liA = '<li><img id="'+ paths[0].name + '"src="' + paths[0].filePath + '"></img></li>';
+    var liB = '<li><img id="' + paths[1].name + '"src="' + paths[1].filePath + '"></img></li>';
+    var liC = '<li><img id="' + paths[2].name + '"src="' + paths[2].filePath + '"></img></li>';
+    console.log(liA);
+    console.log(liB);
+    console.log(liC);
+    $('#images').append(liA + liB + liC);
   }
 };
 
