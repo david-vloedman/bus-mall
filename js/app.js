@@ -31,6 +31,8 @@ const fileNames = [
 var products = [];
 
 var voted = 0;
+
+// Change maxVotes to equal number of time the user can vote
 var maxVotes = 25;
 
 var createProducts = () => {
@@ -42,17 +44,16 @@ var createProducts = () => {
 };
 
 var startVote = () => {
-  console.log(voted);
   if(voted === maxVotes) {
     votingComplete();
     return;
   }
-  renderHTML.createImgList();
+  htmlController.createImgList();
 
 };
 
 var votingComplete = () => {
-  renderHTML.renderResults();
+  htmlController.renderResults();
 };
 
 // ******************************
@@ -63,10 +64,11 @@ var Product = function(name, filePath){
   this.name = name;
   this.filePath = filePath;
   this.clicked = 0;
+  this.previouslyShown = false;
+  this.appeared = 0;
   Product.pushToList(this);
 };
 Product.prototype.wasClicked = function(){
-
   this.clicked++;
   startVote();
 };
@@ -75,13 +77,13 @@ Product.pushToList = (product) => {
 };
 
 // ******************************
-//  imgGenerator
+//  imgController
 // ******************************
 
-var imgGenerator = {
+var imgController = {
 
   getPaths: function(){
-    var indices = imgGenerator.getUniqueIndices();
+    var indices = imgController.getUniqueIndices();
     var paths = [];
     indices.forEach((index) => {
       paths.push(products[index]);
@@ -90,16 +92,34 @@ var imgGenerator = {
   },
 
 
+
   getUniqueIndices: function(){
     var a = this.getRandomIndex();
     var b = this.getRandomIndex();
     var c = this.getRandomIndex();
-    while(a === b){
+
+    while(products[a].previouslyShown){
+      a = this.getRandomIndex();
+    }
+
+    while(a === b || products[b].previouslyShown){
       b = this.getRandomIndex();
     }
-    while(a === c || b === c){
+    while(a === c || b === c || products[c].previouslyShown){
       c = this.getRandomIndex();
     }
+
+    products.forEach((product, index, array) =>{
+      array[index].previouslyShown = false;
+    });
+
+    products[a].appeared++;
+    products[b].appeared++;
+    products[c].appeared++;
+    products[a].previouslyShown = true;
+    products[b].previouslyShown = true;
+    products[c].previouslyShown = true;
+
     return [a,b,c];
   },
 
@@ -109,13 +129,13 @@ var imgGenerator = {
 };
 
 // ******************************
-//  renderHTML
+//  htmlController
 // ******************************
 
-var renderHTML = {
+var htmlController = {
   createImgList: function(){
     this.clearList();
-    var paths = imgGenerator.getPaths();
+    var paths = imgController.getPaths();
     var lineItems = [1,2,3];
     lineItems.forEach((item, index, array) => {
       array[index] = document.createElement('li');
@@ -132,7 +152,7 @@ var renderHTML = {
   },
 
   clearList: function(){
-    var list = document.getElementById('images');    
+    var list = document.getElementById('images');
     while(list.firstChild){
       list.removeChild(list.firstChild);
     }
@@ -143,29 +163,36 @@ var renderHTML = {
     var list = document.getElementById('images');
     products.forEach(item => {
       var li = document.createElement('li');
-      li.innerHTML = `${item.name} was clicked ${item.clicked} times`;
+      li.innerHTML = `${item.name} was clicked ${item.clicked} times and appeared ${item.appeared}`;
       list.appendChild(li);
       var lineBreak = document.createElement('br');
       list.appendChild(lineBreak);
     });
+    this.renderChart();
+  },
+  renderChart: function(){
+    var context = document.getElementById('chart');
+    chartController.setOptions(context, 'bar', '# of votes');
+    chartController.makeChart();
+
   }
 };
 
 
 
 // ******************************
-//  clickManager
+//  clickController
 // ******************************
 
 document.addEventListener('click', (e) => {
-  clickManager.imgClicked(e);
+  clickController.imgClicked(e);
 });
 
 
-var clickManager = {
+var clickController = {
   imgClicked: (event) => {
     var img = event.target.id;
-    clickManager.updateClicks(img);
+    clickController.updateClicks(img);
   },
 
   updateClicks: (img) => {
@@ -176,6 +203,60 @@ var clickManager = {
     });
   },
 };
+// ******************************
+//  chartController
+// ******************************
+
+var chartController = {
+
+  context: '',
+  type: '',
+  properties: {
+    type: '',
+    data: {
+      labels: [],
+      datasets: [{
+        label: '',
+        data: [],
+        backgroundColor: ''
+      },{
+        label: '',
+        data: [],
+        backgroundColor: ''
+      }]
+    },
+  },
+
+
+
+  setOptions: function(context, type, chartLbl){
+    this.context = context;
+    this.properties.type = type;
+
+    this.properties.data.datasets[0].label = chartLbl;
+    this.properties.data.datasets[0].backgroundColor = 'rgba(255, 99, 132, 0.2)';
+    this.properties.data.datasets[1].label ='# of times shown';
+    this.properties.data.datasets[1].backgroundColor = 'rgba(153, 102, 255, 0.2)';
+    this.getChartData();
+  },
+
+  getChartData: function(){
+    products.forEach(product => {
+      this.properties.data.labels.push(product.name);
+      this.properties.data.datasets[0].data.push(product.clicked);
+
+      this.properties.data.datasets[1].data.push(product.appeared);
+    });
+
+
+  },
+
+  makeChart: function(){
+    return new Chart(this.context, this.properties);
+  },
+
+};
+
 
 // ******************************
 //  Entry Point
