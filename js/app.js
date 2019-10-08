@@ -42,6 +42,7 @@ var createProducts = () => {
 };
 
 var startVote = () => {
+  console.log(voted);
   if(voted === maxVotes) {
     votingComplete();
     return;
@@ -135,16 +136,31 @@ var renderHTML = {
     while(list.firstChild){
       list.removeChild(list.firstChild);
     }
+  },
+
+  renderResults: function(){
+    this.clearList();
+    var list = document.getElementById('images');
+    products.forEach(item => {
+      var li = document.createElement('li');
+      li.innerHTML = `${item.name} was clicked ${item.clicked} times`;
+      list.appendChild(li);
+      var lineBreak = document.createElement('br');
+      list.appendChild(lineBreak);
+    });
   }
 };
+
+
+
+// ******************************
+//  clickManager
+// ******************************
 
 document.addEventListener('click', (e) => {
   clickManager.imgClicked(e);
 });
 
-// ******************************
-//  clickManager
-// ******************************
 
 var clickManager = {
   imgClicked: (event) => {
@@ -169,3 +185,5 @@ var clickManager = {
   createProducts();
   startVote();
 }();
+
+
