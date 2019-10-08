@@ -1,17 +1,9 @@
 'using strict';
 
-
-// ******************************
-//  Entry Point
-// ******************************
-$(document).ready(() => {
-  createProducts();
-  startVote();
-});
-
 // ******************************
 //  Globals
 // ******************************
+
 const fileNames = [
   'bag.jpg',
   'banana.jpg',
@@ -49,16 +41,13 @@ var createProducts = () => {
   });
 };
 
-
-
 var startVote = () => {
-  
   if(voted === maxVotes) {
     votingComplete();
     return;
   }
   renderHTML.createImgList();
-  
+
 };
 
 var votingComplete = () => {
@@ -76,7 +65,7 @@ var Product = function(name, filePath){
   Product.pushToList(this);
 };
 Product.prototype.wasClicked = function(){
-  
+
   this.clicked++;
   startVote();
 };
@@ -91,7 +80,7 @@ Product.pushToList = (product) => {
 var imgGenerator = {
 
   getPaths: function(){
-    var indices = imgGenerator.getUniqueIndices();    
+    var indices = imgGenerator.getUniqueIndices();
     var paths = [];
     indices.forEach((index) => {
       paths.push(products[index]);
@@ -117,32 +106,39 @@ var imgGenerator = {
     return Math.floor(Math.random() * products.length);
   },
 };
+
 // ******************************
 //  renderHTML
 // ******************************
+
 var renderHTML = {
   createImgList: function(){
+    this.clearList();
     var paths = imgGenerator.getPaths();
-    var liA = '<li><img id="'+ paths[0].name + '"src="' + paths[0].filePath + '"></img></li>';
-    var liB = '<li><img id="' + paths[1].name + '"src="' + paths[1].filePath + '"></img></li>';
-    var liC = '<li><img id="' + paths[2].name + '"src="' + paths[2].filePath + '"></img></li>';   
-    $('#images').empty();
-    $('#images').append(liA + liB + liC);
+    var lineItems = [1,2,3];
+    lineItems.forEach((item, index, array) => {
+      array[index] = document.createElement('li');
+      var childImg = document.createElement('img');
+      childImg.id = paths[index].name;
+      childImg.src = paths[index].filePath;
+      array[index].appendChild(childImg);
+    });
+    var list = document.getElementById('images');
+    lineItems.forEach((item) => {
+      list.appendChild(item);
+    });
     voted++;
   },
 
-  renderResults: function(){
-    $('#images').empty();
-    products.forEach((product) => {
-      var html = '<li>' + product.name + ' Votes:' + product.clicked + '</li><br>';
-      $('#images').append(html);
-    });
+  clearList: function(){
+    var list = document.getElementById('images');    
+    while(list.firstChild){
+      list.removeChild(list.firstChild);
+    }
   }
-
-
 };
 
-document.addEventListener('click', (e) => {  
+document.addEventListener('click', (e) => {
   clickManager.imgClicked(e);
 });
 
@@ -157,11 +153,19 @@ var clickManager = {
   },
 
   updateClicks: (img) => {
-    products.forEach(product => {     
-      if(img === product.name) {        
+    products.forEach(product => {
+      if(img === product.name) {
         product.wasClicked();
       }
     });
   },
 };
 
+// ******************************
+//  Entry Point
+// ******************************
+
+!function(){
+  createProducts();
+  startVote();
+}();
