@@ -47,12 +47,12 @@ var startVote = () => {
     votingComplete();
     return;
   }
-  renderHTML.createImgList();
+  htmlController.createImgList();
 
 };
 
 var votingComplete = () => {
-  renderHTML.renderResults();
+  htmlController.renderResults();
 };
 
 // ******************************
@@ -63,10 +63,10 @@ var Product = function(name, filePath){
   this.name = name;
   this.filePath = filePath;
   this.clicked = 0;
+  this.previouslyShown = false;
   Product.pushToList(this);
 };
 Product.prototype.wasClicked = function(){
-
   this.clicked++;
   startVote();
 };
@@ -75,13 +75,13 @@ Product.pushToList = (product) => {
 };
 
 // ******************************
-//  imgGenerator
+//  imgController
 // ******************************
 
-var imgGenerator = {
+var imgController = {
 
   getPaths: function(){
-    var indices = imgGenerator.getUniqueIndices();
+    var indices = imgController.getUniqueIndices();
     var paths = [];
     indices.forEach((index) => {
       paths.push(products[index]);
@@ -90,16 +90,30 @@ var imgGenerator = {
   },
 
 
+
   getUniqueIndices: function(){
     var a = this.getRandomIndex();
     var b = this.getRandomIndex();
     var c = this.getRandomIndex();
-    while(a === b){
+
+    while(products[a].previouslyShown){
+      a = this.getRandomIndex();
+    }
+
+    while(a === b || products[b].previouslyShown){
       b = this.getRandomIndex();
     }
-    while(a === c || b === c){
+    while(a === c || b === c || products[c].previouslyShown){
       c = this.getRandomIndex();
     }
+
+    products.forEach((product, index, array) =>{
+      array[index].previouslyShown = false;
+    });
+    products[a].previouslyShown = true;
+    products[b].previouslyShown = true;
+    products[c].previouslyShown = true;
+
     return [a,b,c];
   },
 
@@ -109,13 +123,13 @@ var imgGenerator = {
 };
 
 // ******************************
-//  renderHTML
+//  htmlController
 // ******************************
 
-var renderHTML = {
+var htmlController = {
   createImgList: function(){
     this.clearList();
-    var paths = imgGenerator.getPaths();
+    var paths = imgController.getPaths();
     var lineItems = [1,2,3];
     lineItems.forEach((item, index, array) => {
       array[index] = document.createElement('li');
@@ -132,7 +146,7 @@ var renderHTML = {
   },
 
   clearList: function(){
-    var list = document.getElementById('images');    
+    var list = document.getElementById('images');
     while(list.firstChild){
       list.removeChild(list.firstChild);
     }
@@ -154,18 +168,18 @@ var renderHTML = {
 
 
 // ******************************
-//  clickManager
+//  clickController
 // ******************************
 
 document.addEventListener('click', (e) => {
-  clickManager.imgClicked(e);
+  clickController.imgClicked(e);
 });
 
 
-var clickManager = {
+var clickController = {
   imgClicked: (event) => {
     var img = event.target.id;
-    clickManager.updateClicks(img);
+    clickController.updateClicks(img);
   },
 
   updateClicks: (img) => {
@@ -176,6 +190,27 @@ var clickManager = {
     });
   },
 };
+// ******************************
+//  chartController
+// ******************************
+
+var chartController = {
+
+  context: '',
+  type: '',
+  data: {
+    labels: [],
+    datasets: [{
+
+    }
+
+    ]
+  },
+
+
+
+};
+
 
 // ******************************
 //  Entry Point
