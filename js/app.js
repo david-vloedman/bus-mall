@@ -33,7 +33,7 @@ var products = [];
 var voted = 0;
 
 // Change maxVotes to equal number of time the user can vote
-var maxVotes = 25;
+var maxVotes = 3;
 
 var createProducts = () => {
   fileNames.forEach((file) =>{
@@ -160,14 +160,23 @@ var htmlController = {
 
   renderResults: function(){
     this.clearList();
-    var list = document.getElementById('images');
+    var header = document.getElementById('header');
+    var oldcontent = header.lastChild;
+    var content = document.createElement('h2');
+    content.innerText = 'Results';
+    header.replaceChild(content, oldcontent);
+    
+    
+    var container = document.getElementById('results');
+    var list = document.createElement('ul');
+    list.id = 'resultsList';
     products.forEach(item => {
       var li = document.createElement('li');
+      li.className = '.resultLi';
       li.innerHTML = `${item.name} was clicked ${item.clicked} times and appeared ${item.appeared}`;
-      list.appendChild(li);
-      var lineBreak = document.createElement('br');
-      list.appendChild(lineBreak);
+      list.appendChild(li);  
     });
+    container.appendChild(list);
     this.renderChart();
   },
   renderChart: function(){
