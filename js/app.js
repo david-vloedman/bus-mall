@@ -33,7 +33,7 @@ var products = [];
 var voted = 0;
 
 // Change maxVotes to equal number of time the user can vote
-var maxVotes = 3;
+var maxVotes = 25;
 
 var createProducts = () => {
   fileNames.forEach((file) =>{
@@ -160,13 +160,14 @@ var htmlController = {
 
   renderResults: function(){
     this.clearList();
+    persistenceManager.manageStates();
     var header = document.getElementById('header');
     var oldcontent = header.lastChild;
     var content = document.createElement('h2');
     content.innerText = 'Results';
     header.replaceChild(content, oldcontent);
-    
-    
+
+
     var container = document.getElementById('results');
     var list = document.createElement('ul');
     list.id = 'resultsList';
@@ -174,7 +175,7 @@ var htmlController = {
       var li = document.createElement('li');
       li.className = '.resultLi';
       li.innerHTML = `${item.name} was clicked ${item.clicked} times and appeared ${item.appeared}`;
-      list.appendChild(li);  
+      list.appendChild(li);
     });
     container.appendChild(list);
     this.renderChart();
@@ -265,6 +266,50 @@ var chartController = {
   },
 
 };
+// ******************************
+//  Persistence Manager
+// ******************************
+
+var persistenceManager = {
+  previousState: '',
+
+  manageStates: function(){
+
+    if(this.isPreviousState()){
+      this.previousState = this.getState();
+      this.mergeStates();
+      this.clearOldState();
+    }
+
+    this.saveState();
+  },
+
+  saveState: function(){
+    var state = JSON.stringify(products);
+    localStorage.setItem('products', state);
+  },
+
+  getState: function(){
+    return JSON.parse(localStorage.getItem('products'));
+  },
+
+  isPreviousState: function(){
+    return localStorage.getItem('products') !== null ? true : false;
+  },
+
+  mergeStates: function(){
+    this.previousState.forEach((product, index, array) =>{
+      products[index].clicked += product.clicked;
+      products[index].appeared += product.appeared;
+    });
+
+  },
+  clearOldState: function(){
+    localStorage.removeItem('products');
+  }
+
+};
+
 
 
 // ******************************
